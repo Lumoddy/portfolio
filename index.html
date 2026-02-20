@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jaydan Lunt | Systems Engineer</title>
+</head>
+<body style="margin: 0;">
+  <script type="module">
+    for (const e of document.querySelectorAll("#console-intro [data-delay]"))
+        setTimeout(() => e.style.display = "inline", Number(e.getAttribute("data-delay")));
+    const intro = document.getElementById("console-intro");
+    intro.style.display = "";
+    (async () =>
+    {
+        let endDelay = new Promise((res) => setTimeout(res, 1000));
+        try
+        {
+            document.body.append(...new DOMParser().parseFromString(await(await fetch("/portfolio")).text(), "text/html").body.childNodes);
+            await endDelay;
+            const cursor = document.getElementById("console-cursor");
+            for (let i = 0; i < 0.9; i += 0.07)
+            {
+                cursor.style.marginTop = `${i * 100}em`;
+                cursor.style.marginLeft = `${(i * 824) % 100}vw`;
+                await new Promise((res) => setTimeout(res, 20));
+            }
+            intro.remove();
+            document.getElementById("intro-padding").remove();
+            history.replaceState(null, "", "/portfolio");
+        }
+        catch (e)
+        {
+            await endDelay;
+            document.getElementById("console-fail").style.display = "";
+            console.error(e);
+        }
+    })()
+  </script>
+  <style>
+    #console-intro { .ok { color: #04F06A } .failed { color: #F93943 } }
+    [data-delay] { display: none }
+  </style>
+  <div
+    id="console-intro"
+    style="
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      display: none;
+      overflow: hidden;
+      color: #E9E6FF;
+      font-size: max(1vh, 16px);
+      font-family: monospace;
+      white-space-collapse: preserve;"
+    ><div
+      style="
+        background-color: #0A100D;
+        padding-top: calc(env(safe-area-inset-top) + max(0.5vh, 5px));">> load /animation
+<span data-delay="300">[  <span class="ok">OK</span>  ] Fetching Resources...
+</span><span data-delay="520">[  <span class="ok">OK</span>  ] Prepared For Response
+</span><span data-delay="540">[  <span class="ok">OK</span>  ] Fetching Page...
+</span><span id="console-fail" style="display: none;">[<span class="failed">FAILED</span>] Failed to load, try refreshing this page.
+</span></div><div
+      id="console-cursor"
+      style="
+        height: 1.5em;
+        background-color: #0A100D;
+        border-left: solid 0.65em #E9E6FF;"></div><div
+      style="
+        background-color: #0A100D;
+        height: 100vh;"></div></div>
+  <div id="intro-padding" style="height: calc(max(1vh, 16px) * 1.5 * 4);"></div>
+</body>
+</html>
