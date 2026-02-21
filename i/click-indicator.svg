@@ -2,5 +2,5 @@
   <style>
   	.s0 { fill: currentColor; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 8 } 
   </style>
-  <path id="Layer 1" class="s0" d="m128 128l33 91 21-21 16 16 16-16-16-16 20-20zm-47.37 0h31.35m8.01-13.88l-15.68-27.14m15.68 54.9l-15.68 27.15m47.38-82.05l-15.68 27.14"/>
+  <path class="s0" d="m128 128l33 91 21-21 16 16 16-16-16-16 20-20zm-47.37 0h31.35m8.01-13.88l-15.68-27.14m15.68 54.9l-15.68 27.15m47.38-82.05l-15.68 27.14"/>
 </svg>

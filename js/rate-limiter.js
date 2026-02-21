@@ -1,4 +1,8 @@
 import { assertInstance, assertNonNull } from "./common.js";
+import { LeakyBucketLimiter } from "./rate-limiter/leaky-bucket.js";
+import { SlidingWindowLimiter } from "./rate-limiter/sliding-window.js";
+import { TimerLimiter } from "./rate-limiter/timer.js";
+import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
 
 /**
 */ export class RateLimiterApp extends HTMLElement
@@ -6,17 +10,113 @@ import { assertInstance, assertNonNull } from "./common.js";
     /**
     @readonly*/ static observedAttributes = /** @type {const} */(
     [
-        "data-method",
+        "data-algorithm",
         "data-bucket-capacity",
     ]);
 
     /**
+    @returns {"timer" | "token-bucket" | "leaky-bucket" | "sliding-window"}
+    @public*/ get limiterMethod()
+    {
+        switch (this.getAttribute("data-algorithm"))
+        {
+            default:
+            case "timer": return "timer";
+            case "token-bucket": return "token-bucket";
+            case "leaky-bucket": return "leaky-bucket";
+            case "sliding-window": return "sliding-window";
+        }
+    }
+    /**
+    @public*/ set limiterMethod(value)
+    {
+        switch (value)
+        {
+            default:
+                throw new TypeError(
+                    `Setter value must be a valid limiter algorithm, found ${typeof value}.`);
+            case "timer":
+            case "token-bucket":
+            case "leaky-bucket":
+            case "sliding-window":
+        }
+
+        this.setAttribute("data-algorithm", value);
+    }
+
+    /**
+    @returns {number}
+    @public*/ get limiterBucketCapacity()
+    {
+        return Number(this.getAttribute("data-bucket-capacity"));
+    }
+    /**
+    @public*/ set limiterBucketCapacity(value)
+    {
+        if (typeof value !== "number")
+            throw new TypeError(
+                `Setter value must be a number, found ${typeof value}.`);
+
+        this.setAttribute("data-bucket-capacity", String(value));
+    }
+
+    /**
     @type {(event: HTMLElementEventMap["click"]) => void}
-    */ #clickEvent;
+    */ #clickEvent = (e) =>
+    {
+        if (this.matchesClientButton(e.target))
+        {
+            switch (true)
+            {
+                case this.#state instanceof TimerLimiter && this.#state.canPop():
+                    this.#state.pop();
+                    this.blinkServer();
+                    break;
+                case this.#state instanceof TokenBucketLimiter && this.#state.canPop():
+                    this.#state.pop();
+                    this.blinkServer();
+                    break;
+                case this.#state instanceof LeakyBucketLimiter && this.#state.canPush():
+                    this.#state.push();
+                    this.blinkServer();
+                    break;
+                case this.#state instanceof SlidingWindowLimiter && this.#state.canPush():
+                    this.#state.push();
+                    this.blinkServer();
+                    break;
+            }
+        }
+    };
 
     /**
     @type {(event: HTMLElementEventMap["change"]) => void}
-    */ #changeEvent;
+    */ #changeEvent = (e) =>
+    {
+        if (this.matchesMethodSelector(e.target))
+        {
+            this.#state.cancel();
+
+            switch (e.target.value)
+            {
+                case "timer":
+                    this.#state = this.#newTimerLimiter();
+                    break;
+                case "token-bucket":
+                    this.#state = this.#newTokenBucketLimiter();
+                    break;
+                case "leaky-bucket":
+                    this.#state = this.#newLeakyBucketLimiter();
+                    break;
+                case "sliding-window":
+                    this.#state = this.#newSlidingWindowLimiter();
+                    break;
+            }
+        }
+    };
+
+    /**
+    @type {TimerLimiter | TokenBucketLimiter | LeakyBucketLimiter | SlidingWindowLimiter}
+    */ #state = this.#newTimerLimiter();
 
     /**
     @public*/ constructor()
@@ -24,12 +124,12 @@ import { assertInstance, assertNonNull } from "./common.js";
         super();
 
         this.innerHTML = /*html*/`
-          <button class="client"></button>
+          <button class="client"><img src="./i/click-indicator.svg"></button>
           <div class="server"></div>
           <div class="bar"></div>
-          <div class="timer"></div>
-          <label>
-            <select class="method">
+          <label class="algorithm-label">
+            Algorithm:
+            <select class="algorithm">
               <option value="timer">Timer</option>
               <option value="token-bucket">Token Bucket</option>
               <option value="leaky-bucket">Leaky Bucket</option>
@@ -37,184 +137,6 @@ import { assertInstance, assertNonNull } from "./common.js";
             </select>
           </label>
         `;
-
-        this.#clickEvent = (e) =>
-        {
-            if (this.matchesClientButton(e.target))
-            {
-                switch (assertNonNull(this.queryMethodSelector()).value)
-                {
-                    case "timer":
-                    {
-                        const bar = assertNonNull(this.queryBar());
-                        if (bar.getAnimations().length === 0)
-                        {
-                            bar.animate(
-                                [{ "--time": 1.0 }, { "--time": 0.0 }],
-                                { duration: 500, iterations: 1 });
-
-                            this.blinkServer();
-                        }
-
-                        break;
-                    }
-                    case "token-bucket":
-                    {
-                        const bar = assertNonNull(this.queryBar());
-                        const firstToken = bar.firstElementChild;
-                        if (firstToken !== null &&
-                            firstToken.getAnimations().length === 0)
-                        {
-                            firstToken.remove();
-                            this.blinkServer();
-
-                            const lastToken = bar.lastElementChild;
-                            if (lastToken === null ||
-                                lastToken.getAnimations().length === 0)
-                            {
-                                /**
-                                @type {() => boolean}
-                                */ const append = () =>
-                                {
-                                    const bar = assertNonNull(this.queryBar());
-
-                                    if (!(bar.childElementCount <
-                                        Number(this.getAttribute("data-bucket-capacity"))))
-                                        return false;
-
-                                    const newToken = bar.appendChild(
-                                        document.createElement("filling-token"));
-
-                                    newToken
-                                        .animate(
-                                            [{ "--time": 1.0 }, { "--time": 0.0 }],
-                                            { duration: 500, iterations: 1 })
-                                        .finished
-                                        .then(append);
-
-                                    return true;
-                                }
-
-                                append();
-                            }
-                        }
-
-                        break;
-                    }
-                    case "leaky-bucket":
-                    {
-                        const bar = assertNonNull(this.queryBar());
-                        const tokenCount = bar.childElementCount;
-                        if (tokenCount < Number(this.getAttribute("data-bucket-capacity")))
-                        {
-                            const newToken = bar.appendChild(
-                                document.createElement("leaking-token"));
-
-                            this.blinkServer();
-
-                            if (tokenCount === 0)
-                            {
-                                /**
-                                @type {(token: Element) => () => void}
-                                */ const bindToFinish = (token) => () =>
-                                {
-                                    const nextToken = token.nextSibling;
-                                    
-                                    token.remove();
-
-                                    if (!(nextToken instanceof Element))
-                                        return;
-
-                                    nextToken
-                                        .animate(
-                                            [{ "--time": 1.0 }, { "--time": 0.0 }],
-                                            { duration: 500, iterations: 1 })
-                                        .finished
-                                        .then(bindToFinish(nextToken));
-                                };
-
-                                newToken
-                                    .animate(
-                                        [{ "--time": 1.0 }, { "--time": 0.0 }],
-                                        { duration: 500, iterations: 1 })
-                                    .finished
-                                    .then(bindToFinish(newToken));
-                            }
-                        }
-
-                        break;
-                    }
-                    case "sliding-window":
-                    {
-                        const bar = assertNonNull(this.queryBar());
-                        const tokenCount = bar.childElementCount;
-                        if (tokenCount < Number(this.getAttribute("data-bucket-capacity")))
-                        {
-                            const newToken = bar.appendChild(
-                                document.createElement("sliding-token"));
-
-                            this.blinkServer();
-
-                            newToken
-                                .animate(
-                                    [{ "--time": 1.0 }, { "--time": 0.0 }],
-                                    { duration: 1000, iterations: 1 })
-                                .finished
-                                .then(() => newToken.remove());
-                        }
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        this.#changeEvent = (e) =>
-        {
-            if (this.matchesMethodSelector(e.target))
-            {
-                const bar = assertNonNull(this.queryBar());
-                bar.getAnimations().forEach((a) => a.cancel());
-                [...bar.children].forEach((x) =>
-                {
-                    x.getAnimations().forEach((a) => a.cancel());
-                    x.remove();
-                });
-
-                switch (e.target.value)
-                {
-                    case "token-bucket":
-                    {
-                        /**
-                        @type {() => boolean}
-                        */ const append = () =>
-                        {
-                            const bar = assertNonNull(this.queryBar());
-
-                            if (!(bar.childElementCount <
-                                Number(this.getAttribute("data-bucket-capacity"))))
-                                return false;
-
-                            const newToken = bar.appendChild(
-                                document.createElement("filling-token"));
-
-                            newToken
-                                .animate(
-                                    [{ "--time": 1.0 }, { "--time": 0.0 }],
-                                    { duration: 500, iterations: 1 })
-                                .finished
-                                .then(append);
-
-                            return true;
-                        }
-
-                        append();
-
-                        break;
-                    }
-                }
-            }
-        }
 
         this.addEventListener("click", this.#clickEvent);
         this.addEventListener("change", this.#changeEvent);
@@ -228,16 +150,175 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         switch (attributeName)
         {
-            case "data-method":
-                assertNonNull(this.queryMethodSelector()).value = newValue ?? "timer";
+            case "data-algorithm":
+                this.getMethodSelector().value = newValue ?? "timer";
                 break;
         }
     }
 
     /**
+    @returns {TimerLimiter}
+    */ #newTimerLimiter()
+    {
+        /**
+        @type {Animation | null}
+        */ let animation = null;
+
+        const limiter = new TimerLimiter({ duration: 500 });
+
+        limiter.addEventListener("push-start", ({ duration }) =>
+        {
+            if (animation !== null)
+                animation.cancel();
+
+            animation = this.getBar().animate(
+                [{ "--wait-out": 1.0 }, { "--wait-out": 0.0 }],
+                { duration, iterations: 1 });
+        });
+
+        limiter.addEventListener("cancel", () =>
+        {
+            if (animation !== null)
+                animation.cancel();
+        });
+
+        return limiter;
+    }
+
+    /**
+    @returns {TokenBucketLimiter}
+    */ #newTokenBucketLimiter()
+    {
+        /**
+        @type {HTMLElement[]}
+        */ const elements = [];
+
+        const limiter = new TokenBucketLimiter(
+        {
+            duration: 500,
+            capacity: this.limiterBucketCapacity,
+        });
+
+        limiter.addEventListener("push-start", ({ duration }) =>
+        {
+            const element = document.createElement("filling-token");
+            this.getBar().append(element);
+
+            element.animate(
+                [{ "--wait-in": 0.0 }, { "--wait-in": 1.0 }],
+                { duration, iterations: 1 });
+
+            elements.push(element);
+        });
+
+        limiter.addEventListener("pop", () =>
+        {
+            const element = assertNonNull(elements.shift());
+
+            element.animate(
+                [{ "--fade-out": 0.0 }, { "--fade-out": 1.0 }],
+                { duration: 200, iterations: 1 })
+                .finished
+                .then(() => element.remove());
+        });
+
+        limiter.addEventListener("cancel", () =>
+        {
+            [...this.getBar().childNodes].forEach((x) => x.remove());
+        });
+
+        return limiter;
+    }
+
+    /**
+    @returns {LeakyBucketLimiter}
+    */ #newLeakyBucketLimiter()
+    {
+        /**
+        @type {HTMLElement[]}
+        */ const elements = [];
+
+        const limiter = new LeakyBucketLimiter(
+        {
+            duration: 500,
+            capacity: this.limiterBucketCapacity,
+        });
+
+        limiter.addEventListener("push", () =>
+        {
+            const element = document.createElement("leaking-token");
+            this.getBar().prepend(element);
+
+            element.animate(
+                [{ "--fade-in": 0.0 }, { "--fade-in": 1.0 }],
+                { duration: 200, iterations: 1 });
+
+            elements.push(element);
+        });
+
+        limiter.addEventListener("pop-start", ({ duration }) =>
+        {
+            const element = assertNonNull(elements.shift());
+
+            element.animate(
+                [{ "--wait-out": 0.0 }, { "--wait-out": 1.0 }],
+                { duration, iterations: 1 })
+                .finished
+                .then(() => element.remove());
+        });
+
+        limiter.addEventListener("cancel", () =>
+        {
+            [...this.getBar().childNodes].forEach((x) => x.remove());
+        });
+
+        return limiter;
+    }
+
+    /**
+    @returns {SlidingWindowLimiter}
+    */ #newSlidingWindowLimiter()
+    {
+        /**
+        @type {Set<HTMLElement>}
+        */ const elements = new Set();
+
+        const limiter = new SlidingWindowLimiter(
+        {
+            duration: 3000,
+            capacity: this.limiterBucketCapacity,
+        });
+
+        limiter.addEventListener("push", ({ duration }) =>
+        {
+            const element = this.getBar().appendChild(
+                document.createElement("sliding-token"));
+
+            element.animate(
+                [{ "--wait-out": 0.0 }, { "--wait-out": 1.0 }],
+                { duration, iterations: 1 })
+                .finished
+                .then(() =>
+                {
+                    element.remove();
+                    elements.delete(element);
+                });
+
+            elements.add(element);
+        });
+
+        limiter.addEventListener("cancel", () =>
+        {
+            for (const element of elements)
+                element.remove();
+        });
+
+        return limiter;
+    }
+
+    /**
     */ blinkServer()
     {
-        document.body.append("*");
         assertNonNull(RateLimiterApp.prototype.queryServerBlinker.call(this))
             .animate(
                 [{ "--blink": 1.0 }, { "--blink": 0.0 }],
@@ -250,7 +331,7 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         const element = this.querySelector("& button.client");
         return element instanceof HTMLButtonElement ? element : null;
@@ -263,7 +344,7 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         return element instanceof HTMLButtonElement &&
             this.contains(element) &&
@@ -271,12 +352,16 @@ import { assertInstance, assertNonNull } from "./common.js";
     }
 
     /**
+    @returns {HTMLButtonElement}
+    */ getClientButton() { return assertNonNull(this.queryClientButton()) }
+
+    /**
     @returns {Element?}
     */ queryServerBlinker()
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         return this.querySelector("& .server");
     }
@@ -288,7 +373,7 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         return element instanceof HTMLButtonElement &&
             this.contains(element) &&
@@ -296,12 +381,16 @@ import { assertInstance, assertNonNull } from "./common.js";
     }
 
     /**
+    @returns {Element}
+    */ getServerBlinker() { return assertNonNull(this.queryServerBlinker()) }
+
+    /**
     @returns {Element?}
     */ queryBar()
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         return this.querySelector("& .bar");
     }
@@ -313,7 +402,7 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         return element instanceof Element &&
             this.contains(element) &&
@@ -321,29 +410,8 @@ import { assertInstance, assertNonNull } from "./common.js";
     }
 
     /**
-    @returns {Element?}
-    */ queryTimer()
-    {
-        if (!(this instanceof RateLimiterApp))
-            throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
-
-        return this.querySelector("& .timer");
-    }
-
-    /**
-    @param {unknown} element
-    @returns {element is Element}
-    */ matchesTimer(element)
-    {
-        if (!(this instanceof RateLimiterApp))
-            throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
-
-        return element instanceof Element &&
-            this.contains(element) &&
-            element.matches(".timer");
-    }
+    @returns {Element}
+    */ getBar() { return assertNonNull(this.queryBar()) }
 
     /**
     @returns {HTMLSelectElement?}
@@ -351,9 +419,9 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
-        const element = this.querySelector("& select.method");
+        const element = this.querySelector("& select.algorithm");
         return element instanceof HTMLSelectElement ? element : null;
     }
 
@@ -364,11 +432,15 @@ import { assertInstance, assertNonNull } from "./common.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}`);
+                `Invalid 'this', found ${typeof this}.`);
 
         return element instanceof HTMLSelectElement &&
             this.contains(element) &&
-            element.matches("select.method");
+            element.matches("select.algorithm");
     }
+
+    /**
+    @returns {HTMLSelectElement}
+    */ getMethodSelector() { return assertNonNull(this.queryMethodSelector()) }
 }
 customElements.define("app-rate-limiter", RateLimiterApp);

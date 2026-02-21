@@ -1,0 +1,123 @@
+@import url("./common.css");
+
+app-rate-limiter
+{
+    width: 400px;
+    aspect-ratio: 1.2;
+    position: relative;
+
+    & > * { position: absolute }
+
+    & > button.client
+    {
+        top: 32%;
+        left: 8%;
+        width: 40%;
+        border: none;
+        border-radius: 50%;
+        aspect-ratio: 1;
+        appearance: none;
+        background-color: #50C0FF;
+
+        & > img
+        {
+            width: 100%;
+            height: 100%;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        &:hover, &:focus-visible
+        {
+            background-color: #69c8ff;
+
+            & > img
+            {
+                filter: invert();
+            }
+        }
+
+        &:active
+        {
+            background-color: #4aa3d6;
+        }
+    }
+
+    & > .server
+    {
+        top: 6%;
+        left: 62%;
+        width: 30%;
+        border: 2px solid #4FC8AF;
+        border-radius: 50%;
+        aspect-ratio: 1;
+        appearance: none;
+        background-color: color-mix(
+            in srgb,
+            #4FC8AF calc(100% * var(--blink)),
+            transparent calc(100% * (1 - var(--blink))));
+    }
+
+    & > .bar
+    {
+        top: 48%;
+        left: 82%;
+        width: 8%;
+        height: 40%;
+        padding: 2px;
+        border: 2px solid #4FC8AF;
+        border-radius: 8px;
+        display: block;
+        overflow: hidden;
+        background: linear-gradient(
+            to bottom,
+            transparent calc(100% * (1 - var(--wait-out))),
+            #4FC8AF calc(100% * (1 - var(--wait-out))));
+
+        & > filling-token,
+        & > leaking-token,
+        & > sliding-token
+        {
+            display: block;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        & > filling-token
+        {
+            margin-bottom: 2px;
+            height: calc(((100% - 10px) / 6) * (1 - var(--fade-out)) * (1 - var(--fade-out)));
+            background: linear-gradient(
+                to left,
+                transparent calc(100% * (1 - var(--wait-in))),
+                #4FC8AF calc(100% * (1 - var(--wait-in))));
+        }
+
+        & > leaking-token
+        {
+            margin-bottom: 2px;
+            height: calc(((100% - 10px) / 6) * (1 - (1 - var(--fade-in)) * (1 - var(--fade-in))));
+            background: linear-gradient(
+                to left,
+                transparent calc(100% * var(--wait-out)),
+                #4FC8AF calc(100% * var(--wait-out)));
+        }
+
+        & > sliding-token
+        {
+            top: calc(((100% + 16px) * var(--wait-out)) - 8px);
+            width: calc(100% - 4px);
+            height: 8px;
+            position: absolute;
+            background: #4FC8AF;
+        }
+    }
+
+    & > .algorithm-label
+    {
+        bottom: 0%;
+        left: 0%;
+        right: 20%;
+        margin: 4px;
+    }
+}

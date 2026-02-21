@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jaydan Lunt | Systems Engineer</title>
-  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/rate-limiter.css">
+  <script type="module" src="/js/rate-limiter.js"></script>
 </head>
 <body style="margin: 0;">
   <script type="module">
@@ -19,6 +20,8 @@
           {
               document.body.append(...new DOMParser().parseFromString(await(await fetch("/portfolio")).text(), "text/html").body.childNodes);
               await endDelay;
+              document.getElementById("console-draw").style.display = "";
+              await new Promise((res) => setTimeout(res, 100));
               const cursor = document.getElementById("console-cursor");
               for (let i = 0; i < 0.9; i += 0.07)
               {
@@ -67,8 +70,8 @@
 </span><span data-delay="580">[  <span class="ok">OK</span>  ] Fetching Configuration...
 </span><span data-delay="610">[  <span class="ok">OK</span>  ] Configuration: Success
 </span><span data-delay="610">[  <span class="ok">OK</span>  ] Found Page Configuration
-</span><span data-delay="640">[  <span class="ok">OK</span>  ] Preparing Page Fetch...
-</span><span data-delay="680">[  <span class="ok">OK</span>  ] Fetching Page...
+</span><span data-delay="640">[  <span class="ok">OK</span>  ] Fetching Page...
+</span><span id="console-draw" style="display: none;">[  <span class="ok">OK</span>  ] Drawing Page...
 </span><span id="console-fail" style="display: none;">[<span class="failed">FAILED</span>] Failed to load, try refreshing this page.
 </span></div><div
       id="console-cursor"

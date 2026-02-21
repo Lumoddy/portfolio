@@ -1,5 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+@property --fade-in { syntax: "<number>"; inherits: false; initial-value: 1.0; }
+
+@property --fade-out { syntax: "<number>"; inherits: false; initial-value: 0.0; }
+
+@property --wait-in { syntax: "<number>"; inherits: false; initial-value: 1.0; }
+
+@property --wait-out { syntax: "<number>"; inherits: false; initial-value: 0.0; }
+
+@property --blink { syntax: "<number>"; inherits: false; initial-value: 0.0; }
 
 :root
 {
-  color-scheme: light dark;
+    color-scheme: light dark;
+
+    --font-code: "JetBrains Mono", monospace;
+    --font-small: "Montserrat", sans-serif;
+    --font-normal: "Funnel Sans", sans-serif;
+    font-family: var(--font-normal);
+}
+
+.panel
+{
+    margin: 8px;
+    border: 1px solid #5F6266;
+    border-radius: 6px;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: start;
+    align-items: stretch;
+    align-content: start;
+    overflow: hidden;
+    background-color: #292C30;
+
+    & > header
+    {
+        padding: 2px 6px;
+        background-color: #2F3236;
+        font-size: medium;
+    }
+
+    & > :not(:last-child)
+    {
+        border-bottom: 1px solid #5F6266;
+    }
 }
