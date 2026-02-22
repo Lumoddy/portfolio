@@ -1,0 +1,116 @@
+@import url("./common.css");
+
+app-live-chat
+{
+    position: relative;
+    width: 400px;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: stretch;
+    align-items: stretch;
+    aspect-ratio: 1.2;
+
+    & > .top
+    {
+        position: absolute;
+        inset: 0;
+        bottom: unset;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        background-color: #FFFFFF10;
+        backdrop-filter: blur(4px);
+
+        & > .name-input
+        {
+            margin: 8px;
+            border: none;
+            border-radius: 9999px;
+            appearance: none;
+            background-color: #00000080;
+            font-size: large;
+            text-align: center;
+        }
+    }
+
+    & > .message-container
+    {
+        padding-top: 48px;
+        display: flex;
+        flex: 1;
+        flex-flow: column nowrap;
+        justify-content: start;
+        align-items: stretch;
+        overflow-y: auto;
+
+        & > live-message
+        {
+            margin: 4px 8px;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: end;
+            align-items: stretch;
+            opacity: calc(var(--fade-in));
+            background-color: #FFFFFF20;
+
+            & > .name
+            {
+                color: #FFFFFFA0;
+            }
+
+            & > .text
+            {
+                font-size: large;
+            }
+        }
+    }
+
+    & > .message-bar
+    {
+        padding: 4px;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: stretch;
+        align-items: start;
+
+        & > .message-input
+        {
+            margin: 4px;
+            padding: 4px;
+            border-radius: 4px;
+            flex: 1;
+            background-color: #00000080;
+        }
+
+        & > button.send
+        {
+            margin: 4px;
+            width: min-content;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 9999px;
+            appearance: none;
+            background-color: #4FC8AF;
+            color: #000000;
+
+            &:hover, &:focus-visible
+            {
+                background-color: #75e1cb;
+            }
+
+            &:active
+            {
+                background-color: #3cab95;
+            }
+
+            &:disabled
+            {
+                background-color: #4FC8AF80;
+                color: #00000080;
+            }
+        }
+    }
+}

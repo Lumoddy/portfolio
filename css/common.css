@@ -29,13 +29,16 @@
     flex-flow: column nowrap;
     justify-content: start;
     align-items: stretch;
-    align-content: start;
     overflow: hidden;
     background-color: #292C30;
 
     & > header
     {
         padding: 2px 6px;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: stretch;
         background-color: #2F3236;
         font-size: medium;
     }

@@ -49,13 +49,13 @@
     {
         if (typeof value !== "number")
             throw new TypeError(
-                `Setter value must be a number, found ${typeof value}.`);
+                `Setter value must be a number, found '${typeof value}'.`);
 
         this.#duration = value;
     }
 
     /**
-    @type {number}
+    @type {ReturnType<setTimeout> | -1}
     */ #timeout = -1;
 
     /**
@@ -69,7 +69,7 @@
         this.#duration = options.duration;
         if (typeof this.#duration !== "number")
             throw new TypeError(
-                `Argument 1 'options' field 'duration' must be a number, found ${typeof this.#duration}.`);
+                `Argument 1 'options' field 'duration' must be a number, found '${typeof this.#duration}'.`);
 
         const length = options.length ?? 1;
         switch (length)
@@ -81,7 +81,7 @@
                 break;
             default:
                 throw new TypeError(
-                    `Argument 1 'options' field 'length' must be 0 or 1, found ${typeof length}.`);
+                    `Argument 1 'options' field 'length' must be 0 or 1, found '${typeof length}'.`);
         }
     }
 
@@ -90,7 +90,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         if (!this.#active)
             return;
@@ -106,7 +106,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return this.#active && this.#timeout !== -1;
     }
@@ -116,7 +116,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         if (!this.#active)
             throw new Error(
@@ -138,7 +138,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return this.#active && this.#timeout === -1;
     }
@@ -149,7 +149,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         if (!this.#active)
             throw new Error(
@@ -179,12 +179,12 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const signal = options.signal;
         if (signal !== undefined && !(signal instanceof AbortSignal))
             throw new TypeError(
-                `Argument 1 'options' field 'signal' must be a number, found ${typeof signal}.`);
+                `Argument 1 'options' field 'signal' must be a number, found '${typeof signal}'.`);
 
         if (signal?.aborted === true)
             return;
@@ -192,7 +192,7 @@
         const once = options.once ?? false;
         if (typeof once !== "boolean")
             throw new TypeError(
-                `Argument 1 'options' field 'once' must be a number, found ${typeof once}.`);
+                `Argument 1 'options' field 'once' must be a number, found '${typeof once}'.`);
 
         this.#listeners[type]?.push({ once, listener });
         signal?.addEventListener("abort", () => this.push());
@@ -206,7 +206,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const listenerList = this.#listeners[type];
         if (listenerList === undefined)
@@ -230,7 +230,7 @@
     {
         if (!(this instanceof TimerLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const listenerList = this.#listeners[type];
         if (listenerList === undefined)

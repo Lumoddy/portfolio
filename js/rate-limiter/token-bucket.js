@@ -49,7 +49,7 @@
     {
         if (typeof value !== "number")
             throw new TypeError(
-                `Setter value must be a number, found ${typeof value}.`);
+                `Setter value must be a number, found '${typeof value}'.`);
 
         this.#duration = value;
     }
@@ -72,7 +72,7 @@
     @readonly*/ get capacity() { return this.#capacity }
 
     /**
-    @type {number}
+    @type {ReturnType<setTimeout> | -1}
     */ #timeout = -1;
 
     /**
@@ -89,24 +89,25 @@
         this.#duration = options.duration;
         if (typeof this.#duration !== "number")
             throw new TypeError(
-                `Argument 1 'options' field 'duration' must be a number, found ${typeof this.#duration}.`);
+                `Argument 1 'options' field 'duration' must be a number, found '${typeof this.#duration}'.`);
 
         this.#capacity = options.capacity;
         if (!Number.isInteger(this.#capacity) || this.#capacity < 0)
             throw new TypeError(
-                `Argument 1 'options' field 'capacity' must be a positive integer, found ${typeof this.#capacity}.`);
+                `Argument 1 'options' field 'capacity' must be a positive integer, found '${typeof this.#capacity}'.`);
 
         this.#length = options.length ?? 0;
         if (!Number.isInteger(this.#length) || this.#length < 0)
             throw new TypeError(
-                `Argument 1 'options' field 'length' must be a positive integer, found ${typeof this.#length}.`);
+                `Argument 1 'options' field 'length' must be a positive integer, found '${typeof this.#length}'.`);
 
         if (this.#length < this.#capacity)
         {
-            setTimeout(() => this.dispatchEvent(
-                "push-start",
-                { target: this, duration: this.#duration }));
-            this.#timeout = setTimeout(() => this.push(), this.#duration);
+            setTimeout(() =>
+            {
+                this.dispatchEvent("push-start", { target: this, duration: this.#duration })
+                this.#timeout = setTimeout(() => this.push(), this.#duration);
+            });
         }
     }
 
@@ -115,7 +116,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         if (!this.#active)
             return;
@@ -131,7 +132,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return this.#active && this.#length < this.#capacity;
     }
@@ -141,7 +142,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         if (!this.#active)
             throw new Error(
@@ -153,9 +154,7 @@
 
         if (this.#timeout === -1)
         {
-            this.dispatchEvent(
-                "push-start",
-                { target: this, duration: 0 });
+            this.dispatchEvent("push-start", { target: this, duration: 0 });
         }
         else
         {
@@ -168,9 +167,7 @@
 
         if (this.#length < this.#capacity)
         {
-            this.dispatchEvent(
-                "push-start",
-                { target: this, duration: this.#duration });
+            this.dispatchEvent("push-start", { target: this, duration: this.#duration });
             this.#timeout = setTimeout(() => this.push(), this.#duration);
         }
     }
@@ -181,7 +178,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return this.#active && this.#length > 0;
     }
@@ -192,7 +189,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         if (!this.#active)
             throw new Error(
@@ -206,9 +203,7 @@
 
         if (this.#timeout === -1 && this.#length < this.#capacity)
         {
-            this.dispatchEvent(
-                "push-start",
-                { target: this, duration: this.#duration });
+            this.dispatchEvent("push-start", { target: this, duration: this.#duration });
             this.#timeout = setTimeout(() => this.push(), this.#duration);
         }
 
@@ -229,12 +224,12 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const signal = options.signal;
         if (signal !== undefined && !(signal instanceof AbortSignal))
             throw new TypeError(
-                `Argument 1 'options' field 'signal' must be a number, found ${typeof signal}.`);
+                `Argument 1 'options' field 'signal' must be a number, found '${typeof signal}'.`);
 
         if (signal?.aborted === true)
             return;
@@ -242,7 +237,7 @@
         const once = options.once ?? false;
         if (typeof once !== "boolean")
             throw new TypeError(
-                `Argument 1 'options' field 'once' must be a number, found ${typeof once}.`);
+                `Argument 1 'options' field 'once' must be a number, found '${typeof once}'.`);
 
         const listenerList = this.#listeners[type];
         if (listenerList !== undefined)
@@ -262,7 +257,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const listenerList = this.#listeners[type];
         if (listenerList === undefined)
@@ -286,7 +281,7 @@
     {
         if (!(this instanceof TokenBucketLimiter))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const listenerList = this.#listeners[type];
         if (listenerList === undefined)

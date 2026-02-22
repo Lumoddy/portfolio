@@ -1,4 +1,4 @@
-import { assertInstance, assertNonNull } from "./common.js";
+import { assertNonNull } from "./common.js";
 import { LeakyBucketLimiter } from "./rate-limiter/leaky-bucket.js";
 import { SlidingWindowLimiter } from "./rate-limiter/sliding-window.js";
 import { TimerLimiter } from "./rate-limiter/timer.js";
@@ -34,7 +34,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
         {
             default:
                 throw new TypeError(
-                    `Setter value must be a valid limiter algorithm, found ${typeof value}.`);
+                    `Setter value must be a valid limiter algorithm, found '${typeof value}'.`);
             case "timer":
             case "token-bucket":
             case "leaky-bucket":
@@ -55,16 +55,16 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (typeof value !== "number")
             throw new TypeError(
-                `Setter value must be a number, found ${typeof value}.`);
+                `Setter value must be a number, found '${typeof value}'.`);
 
         this.setAttribute("data-bucket-capacity", String(value));
     }
 
     /**
     @type {(event: HTMLElementEventMap["click"]) => void}
-    */ #clickEvent = (e) =>
+    */ #clickEvent = ({ target }) =>
     {
-        if (this.matchesClientButton(e.target))
+        if (this.matchesClientButton(target))
         {
             switch (true)
             {
@@ -90,13 +90,13 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
 
     /**
     @type {(event: HTMLElementEventMap["change"]) => void}
-    */ #changeEvent = (e) =>
+    */ #changeEvent = ({ target }) =>
     {
-        if (this.matchesMethodSelector(e.target))
+        if (this.matchesMethodSelector(target))
         {
             this.#state.cancel();
 
-            switch (e.target.value)
+            switch (target.value)
             {
                 case "timer":
                     this.#state = this.#newTimerLimiter();
@@ -331,7 +331,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const element = this.querySelector("& button.client");
         return element instanceof HTMLButtonElement ? element : null;
@@ -344,7 +344,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return element instanceof HTMLButtonElement &&
             this.contains(element) &&
@@ -353,7 +353,10 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
 
     /**
     @returns {HTMLButtonElement}
-    */ getClientButton() { return assertNonNull(this.queryClientButton()) }
+    */ getClientButton()
+    {
+        return assertNonNull(RateLimiterApp.prototype.queryClientButton.call(this));
+    }
 
     /**
     @returns {Element?}
@@ -361,7 +364,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return this.querySelector("& .server");
     }
@@ -373,7 +376,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return element instanceof HTMLButtonElement &&
             this.contains(element) &&
@@ -382,7 +385,10 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
 
     /**
     @returns {Element}
-    */ getServerBlinker() { return assertNonNull(this.queryServerBlinker()) }
+    */ getServerBlinker()
+    {
+        return assertNonNull(RateLimiterApp.prototype.queryServerBlinker.call(this));
+    }
 
     /**
     @returns {Element?}
@@ -390,7 +396,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return this.querySelector("& .bar");
     }
@@ -402,7 +408,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return element instanceof Element &&
             this.contains(element) &&
@@ -411,7 +417,10 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
 
     /**
     @returns {Element}
-    */ getBar() { return assertNonNull(this.queryBar()) }
+    */ getBar()
+    {
+        return assertNonNull(RateLimiterApp.prototype.queryBar.call(this));
+    }
 
     /**
     @returns {HTMLSelectElement?}
@@ -419,7 +428,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         const element = this.querySelector("& select.algorithm");
         return element instanceof HTMLSelectElement ? element : null;
@@ -432,7 +441,7 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
     {
         if (!(this instanceof RateLimiterApp))
             throw new TypeError(
-                `Invalid 'this', found ${typeof this}.`);
+                `Invalid 'this', found '${typeof this}'.`);
 
         return element instanceof HTMLSelectElement &&
             this.contains(element) &&
@@ -441,6 +450,9 @@ import { TokenBucketLimiter } from "./rate-limiter/token-bucket.js";
 
     /**
     @returns {HTMLSelectElement}
-    */ getMethodSelector() { return assertNonNull(this.queryMethodSelector()) }
+    */ getMethodSelector()
+    {
+        return assertNonNull(RateLimiterApp.prototype.queryMethodSelector.call(this));
+    }
 }
 customElements.define("app-rate-limiter", RateLimiterApp);
