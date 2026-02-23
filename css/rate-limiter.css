@@ -2,7 +2,7 @@
 
 app-rate-limiter
 {
-    width: 400px;
+    width: min(400px, 80vmin);
     aspect-ratio: 1.2;
     position: relative;
 
@@ -19,11 +19,12 @@ app-rate-limiter
         appearance: none;
         background-color: #50C0FF;
 
-        & > img
+        & > svg
         {
             width: 100%;
             height: 100%;
             opacity: 0.2;
+            color: #000000;
             pointer-events: none;
         }
 
@@ -31,9 +32,9 @@ app-rate-limiter
         {
             background-color: #69c8ff;
 
-            & > img
+            & > svg
             {
-                filter: invert();
+                color: #FFFFFF;
             }
         }
 

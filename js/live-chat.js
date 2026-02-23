@@ -6,6 +6,18 @@ import { LiveChatService } from "./live-chat/service.js";
 */ export class LiveChatApp extends HTMLElement
 {
     /**
+    @type {(event: HTMLElementEventMap["input"]) => Promise<void>}
+    */ #inputEvent = async ({ target }) =>
+    {
+        if (this.matchesNameInput(target) || this.matchesMessageInput(target))
+        {
+            this.getSendButton().disabled =
+                !/^[^\x00-\x1F\r\n\t]{1,32}$/.test(this.getNameInput().value) ||
+                !/^[^\x00-\x1F]{1,1024}$/.test(this.getMessageInput().textContent);
+        }
+    };
+
+    /**
     @type {(event: HTMLElementEventMap["click"]) => Promise<void>}
     */ #clickEvent = async ({ target }) =>
     {
@@ -17,8 +29,8 @@ import { LiveChatService } from "./live-chat/service.js";
             try
             {
                 target.disabled = true;
-                await this.#state.sendMessage(this.getNameInput().value, input.textContent);
-                input.textContent = "";
+                await this.#state.sendMessage(this.getNameInput().value, input.value);
+                input.value = "";
             }
             catch (error)
             {
@@ -29,14 +41,24 @@ import { LiveChatService } from "./live-chat/service.js";
     };
 
     /**
-    @type {(event: HTMLElementEventMap["input"]) => Promise<void>}
-    */ #inputEvent = async ({ target }) =>
+    @type {(event: HTMLElementEventMap["submit"]) => Promise<void>}
+    */ #submitEvent = async ({ target }) =>
     {
-        if (this.matchesNameInput(target) || this.matchesMessageInput(target))
+        if (this.matchesMessageInput(target))
         {
-            this.getSendButton().disabled =
-                !/^[^\x00-\x1F\r\n\t]{1,32}$/.test(this.getNameInput().value) ||
-                !/^[^\x00-\x1F]{1,1024}$/.test(this.getMessageInput().textContent);
+            const oldDisabled = target.disabled;
+
+            try
+            {
+                target.disabled = true;
+                await this.#state.sendMessage(this.getNameInput().value, target.value);
+                target.value = "";
+            }
+            catch (error)
+            {
+                target.disabled = oldDisabled;
+                throw error;
+            }
         }
     };
 
@@ -53,7 +75,7 @@ import { LiveChatService } from "./live-chat/service.js";
           <div class="top"><input class="name-input" placeholder="Your Nickname"></div>
           <div class="message-container"></div>
           <div class="message-bar">
-            <div class="message-input" contenteditable="plaintext-only"></div>
+            <input class="message-input">
             <button class="send" disabled>Send</button>
             <div class="error"></div>
           </div>
@@ -61,6 +83,7 @@ import { LiveChatService } from "./live-chat/service.js";
 
         this.addEventListener("click", this.#clickEvent);
         this.addEventListener("input", this.#inputEvent);
+        this.addEventListener("submit", this.#submitEvent);
 
         this.#state.addEventListener("message-added", ({ index, name, text }) =>
         {
@@ -119,33 +142,33 @@ import { LiveChatService } from "./live-chat/service.js";
     }
 
     /**
-    @returns {Element?}
+    @returns {HTMLInputElement?}
     */ queryMessageInput()
     {
         if (!(this instanceof LiveChatApp))
             throw new TypeError(
                 `Invalid 'this', found '${typeof this}'.`);
 
-        const element = this.querySelector("& .message-input");
-        return element instanceof Element ? element : null;
+        const element = this.querySelector("& input.message-input");
+        return element instanceof HTMLInputElement ? element : null;
     }
 
     /**
     @param {unknown} element
-    @returns {element is Element}
+    @returns {element is HTMLInputElement}
     */ matchesMessageInput(element)
     {
         if (!(this instanceof LiveChatApp))
             throw new TypeError(
                 `Invalid 'this', found '${typeof this}'.`);
 
-        return element instanceof Element &&
+        return element instanceof HTMLInputElement &&
             this.contains(element) &&
-            element.matches(".message-input");
+            element.matches("input.message-input");
     }
 
     /**
-    @returns {Element}
+    @returns {HTMLInputElement}
     */ getMessageInput()
     {
         return assertNonNull(LiveChatApp.prototype.queryMessageInput.call(this));

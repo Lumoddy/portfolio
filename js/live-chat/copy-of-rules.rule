@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Due to the nature of making the live chat anonymous, spamming cannot be prevented.
+    match /live_chat/{any} { allow read }
+    match /live_chat/info {
+      // Index can only be incremented when a message has filled the current index.
+      allow create, update:
+        if request.resource.data.keys().hasOnly(["index"])
+        && request.resource.data["index"] is int
+        && request.resource.data["index"] == (exists(/databases/$(database)/documents/live_chat/info)
+        	? get(/databases/$(database)/documents/live_chat/info).data["index"] + 1
+          : 1)
+        && exists(/databases/$(database)/documents/live_chat/$(string(request.resource.data["index"] - 1)))
+    }
+    // Messages are indexed in order of creation.
+    match /live_chat/{document} {
+      // Messages can only be created if it's name incremented by 1 from the previous message.
+      // To do this, the user must increment `/live_chat/info.index` first.
+      allow create:
+      	if string(document).matches("^(?:0|[1-9][0-9]{0,10})$")
+        && request.resource.data.keys().hasOnly(["name", "text"])
+        && request.resource.data["name"] is string
+        && request.resource.data["name"].size() > 0 && request.resource.data["name"].size() <= 32
+        && request.resource.data["name"].matches("^[^\\x00-\\x1F\r\n\t]*$")
+        && request.resource.data["text"] is string
+        && request.resource.data["text"].size() > 0 && request.resource.data["text"].size() <= 1024
+        && request.resource.data["text"].matches("^[^\\x00-\\x1F]*$")
+        && int(document) == (exists(/databases/$(database)/documents/live_chat/info)
+          ? get(/databases/$(database)/documents/live_chat/info).data["index"]
+        	: 0);
+      // Oldest messages can be freely deleted when more than 100 exist.
+      allow delete:
+      	if string(document).matches("^(?:0|[1-9][0-9]{0,10})$")
+        && int(document) <= get(/databases/$(database)/documents/live_chat/info).data["index"] - 100;
+    }
+  }
+}

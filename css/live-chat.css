@@ -3,7 +3,7 @@
 app-live-chat
 {
     position: relative;
-    width: 400px;
+    width: min(400px, 80vmin);
     display: flex;
     flex-flow: column nowrap;
     justify-content: stretch;
@@ -80,7 +80,9 @@ app-live-chat
         {
             margin: 4px;
             padding: 4px;
+            border: none;
             border-radius: 4px;
+            appearance: none;
             flex: 1;
             background-color: #00000080;
         }
