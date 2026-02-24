@@ -2,12 +2,14 @@
 
 app-live-chat
 {
+    box-sizing: border-box;
     position: relative;
     width: min(400px, 80vmin);
     display: flex;
     flex-flow: column nowrap;
     justify-content: stretch;
     align-items: stretch;
+    text-align: start;
     aspect-ratio: 1.2;
 
     & > .top

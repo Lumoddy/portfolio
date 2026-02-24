@@ -10,6 +10,8 @@
 
 @property --blink { syntax: "<number>"; inherits: false; initial-value: 0.0; }
 
+@property --original { syntax: "<color>"; inherits: true; initial-value: light-dark(#000000, #FFFFFF); }
+
 :root
 {
     color-scheme: dark;
@@ -17,7 +19,14 @@
     --font-code: "JetBrains Mono", monospace;
     --font-small: "Montserrat", sans-serif;
     --font-normal: "Funnel Sans", sans-serif;
+
     font-family: var(--font-normal);
+    background-color: #111317;
+}
+
+h2
+{
+    font-size: xx-large;
 }
 
 .panel
@@ -31,6 +40,9 @@
     align-items: stretch;
     overflow: hidden;
     background-color: #292C30;
+    box-shadow: 0px 4px 16px #00000080;
+
+    & > :not(app-live-chat) { padding: 8px }
 
     & > header
     {
@@ -46,5 +58,333 @@
     & > :not(:last-child)
     {
         border-bottom: 1px solid #5F6266;
+    }
+}
+
+body
+{
+    text-align: center;
+    margin-bottom: 40vh;
+}
+
+#title
+{
+    margin-top: 40vh;
+    margin-bottom: 20vh;
+
+    & > h1
+    {
+        color: #50C0FF;
+        font-size: xxx-large;
+    }
+
+    & > p
+    {
+        font-size: x-large;
+    }
+}
+
+main > section
+{
+    max-width: min(90vw, 1024px);
+    margin-inline: auto;
+}
+
+#about
+{
+    margin-top: 20vh;
+    margin-bottom: 40vh;
+
+    & > div > p
+    {
+        font-size: large;
+    }
+}
+
+#abilities
+{
+    max-width: min(90vw, 1440px);
+
+    & > .skill-container
+    {
+        margin-bottom: 20vh;
+
+        @media (min-width: 600px)
+        {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: stretch;
+            align-items: start;
+        }
+
+        & p
+        {
+            text-align: start;
+        }
+    }
+
+    & > .experience-container
+    {
+        margin-bottom: 20vh;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: start;
+        align-content: start;
+        gap: 16px;
+
+        & > div
+        {
+            width: 160px;
+            position: relative;
+
+            &:hover
+            {
+                & > h3
+                {
+                    filter: drop-shadow(0px 4px 8px var(--original));
+                    translate: 0 -8px;
+                }
+
+                & > p
+                {
+                    filter: drop-shadow(0px 4px 8px var(--original));
+                    translate: 0 -8px;
+                    opacity: 1.0;
+                }
+            }
+
+            & > h3
+            {
+                display: flex;
+                flex-flow: column-reverse nowrap;
+                justify-content: start;
+                align-items: center;
+                align-content: start;
+                gap: 16px;
+                transition: translate 0.1s ease-out, filter 0.1s ease-out;
+
+                & > svg
+                {
+                    width: 100px;
+                }
+            }
+
+            & > p
+            {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1;
+                margin-inline: -16px;
+                padding: 8px;
+                border: 1px solid #5F6266;
+                border-radius: 6px;
+                background-color: #292C30;
+                opacity: 0.0;
+                box-shadow: 0px 4px 16px #00000080;
+                pointer-events: none;
+                text-align: start;
+                transition: translate 0.1s ease-out, filter 0.1s ease-out, opacity 0.5s ease-in-out;
+            }
+        }
+    }
+
+    & > .apps
+    {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    & > .project-container
+    {
+        margin-top: 10vh;
+        margin-bottom: 20vh;
+        text-align: start;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: start;
+        align-content: center;
+        align-items: center;
+        gap: 5vw;
+
+        @media (min-width: 800px)
+        {
+            flex-flow: row wrap;
+            justify-content: space-evenly;
+            align-content: center;
+            align-items: end;
+        }
+
+        & > div
+        {
+            position: relative;
+            flex: 1;
+            min-width: 30vw;
+
+            & > .bar
+            {
+                padding: 8px;
+                border: 1px solid #5F6266;
+                border-radius: 6px;
+                display: flex;
+                flex-flow: column nowrap;
+                justify-content: start;
+                align-items: stretch;
+                overflow: hidden;
+                background-color: #292C30;
+                box-shadow: 0px 4px 16px #00000080;
+
+                & > h3
+                {
+                    font-size: xx-large;
+                }
+
+                & > .used
+                {
+                    text-align: end;
+                }
+            }
+
+            & > .phone
+            {
+                position: absolute;
+                right: 32px;
+                top: -10px;
+                width: 180px;
+                height: 380px;
+                background-size: cover;
+                border: 8px solid #090909;
+                border-radius: 32px;
+                box-shadow: 0px 4px 16px #00000080;
+                transition: top 0.5s ease, box-shadow 0.1s ease-out;
+
+                &:hover
+                {
+                    top: -40px;
+                    box-shadow: 0px 4px 16px #00000080, 0px 4px 8px var(--original);
+                }
+
+                &:after
+                {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    height: 10px;
+                    right: 60px;
+                    left: 60px;
+                    border-bottom-left-radius: 32px;
+                    border-bottom-right-radius: 32px;
+                    background: #090909;
+                }
+
+                & ~ .bar
+                {
+                    padding-right: 240px;
+                    box-shadow: 0px 4px 16px #00000080, 0px -64px 64px -64px var(--original);
+                }
+            }
+
+            & > .game-background
+            {
+                height: 200px;
+                background-size: cover;
+                box-shadow: inset 0 64px 48px 64px #111317;
+            }
+
+            & > .game-cover
+            {
+                position: absolute;
+                right: 32px;
+                top: 100px;
+                width: 280px;
+                height: 130px;
+                background-size: cover;
+                border-radius: 8px;
+                box-shadow: 0px 4px 16px #00000080;
+                transition: top 0.5s ease, box-shadow 0.1s ease-out;
+
+                &:hover
+                {
+                    top: 80px;
+                    box-shadow: 0px 4px 16px #00000080, 0px 4px 8px var(--original);
+                }
+
+                & ~ .bar
+                {
+                    box-shadow: 0px 4px 16px #00000080, 0px -64px 64px -64px var(--original);
+                }
+            }
+
+            & > .game-icon
+            {
+                position: absolute;
+                right: 32px;
+                top: 100px;
+                width: 180px;
+                height: 180px;
+                background-size: cover;
+                border-radius: 8px;
+                filter: drop-shadow(0px 4px 8px transparent) drop-shadow(0px 4px 16px #00000080);
+                transition: top 0.5s ease, filter 0.1s ease-out;
+
+                &:hover
+                {
+                    top: 80px;
+                    filter: drop-shadow(0px 4px 8px var(--original)) drop-shadow(0px 4px 16px #00000080);
+                }
+
+                & ~ .bar
+                {
+                    box-shadow: 0px 4px 16px #00000080, 0px -64px 64px -64px var(--original);
+                }
+            }
+
+            &:has(> .phone)
+            {
+                padding-top: 120px;
+            }
+
+            & .used
+            {
+                margin-top: 8px;
+
+                & > svg
+                {
+                    height: max(40px, 3vw);
+                }
+            }
+        }
+    }
+}
+
+#contact
+{
+    & > .contact-container
+    {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        align-items: center;
+        gap: 40px;
+
+        & > a
+        {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: center;
+            align-items: center;
+            font-size: xxx-large;
+            text-decoration: none;
+            gap: 0.2em;
+
+            & > svg
+            {
+                height: 80px;
+            }
+        }
     }
 }

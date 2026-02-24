@@ -67,6 +67,10 @@ import { LiveChatService } from "./live-chat/service.js";
     */ #state = new LiveChatService();
 
     /**
+    @type {boolean}
+    */ #first = true;
+
+    /**
     @public*/ constructor()
     {
         super();
@@ -85,9 +89,12 @@ import { LiveChatService } from "./live-chat/service.js";
         this.addEventListener("input", this.#inputEvent);
         this.addEventListener("submit", this.#submitEvent);
 
-        this.#state.addEventListener("message-added", ({ index, name, text }) =>
+        this.#state.addEventListener("message-added", ({ index, name, text, isInit }) =>
         {
-            this.createMessage(index, name, text).scrollIntoView({ behavior: "smooth" });
+            if (isInit)
+                this.createMessage(index, name, text, false);
+            else
+                this.createMessage(index, name, text).scrollIntoView({ behavior: "smooth" });
         });
 
         this.#state.addEventListener("message-modify", ({ index, name, text }) =>
@@ -404,8 +411,9 @@ import { LiveChatService } from "./live-chat/service.js";
     @param {number} id
     @param {string} name
     @param {string} message
+    @param {boolean} [animate]
     @returns {Element}
-    */ createMessage(id, name, message)
+    */ createMessage(id, name, message, animate = true)
     {
         const container = LiveChatApp.prototype.getMessageContainer.call(this);
 
@@ -424,9 +432,10 @@ import { LiveChatService } from "./live-chat/service.js";
         const element = document.createElement("live-message");
         element.setAttribute("data-message-id", String(id));
 
-        element.animate(
-            [{ "--fade-in": 0.0 }, { "--fade-in": 1.0 }],
-            { duration: 500, iterations: 1 })
+        if (animate)
+            element.animate(
+                [{ "--fade-in": 0.0 }, { "--fade-in": 1.0 }],
+                { duration: 500, iterations: 1 });
 
         const nameElement = element.appendChild(document.createElement("span"));
         nameElement.classList.add("name");

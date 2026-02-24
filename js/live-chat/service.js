@@ -10,7 +10,7 @@ import { assertInstance } from "../common.js";
 @export @typedef {
 {
     "cancel": [event: { target: LiveChatService }],
-    "message-added": [event: { target: LiveChatService, index: number, name: string, text: string }],
+    "message-added": [event: { target: LiveChatService, index: number, name: string, text: string, isInit: boolean }],
     "message-modify": [event: { target: LiveChatService, index: number, name: string, text: string }],
     "message-remove": [event: { target: LiveChatService, index: number }],
 }
@@ -62,6 +62,8 @@ const firebaseFirestore = initializeFirestore(firebaseApp, {});
     @param {{}} [options]
     */ constructor(options = {})
     {
+        let first = true;
+
         this.#unsubscribe = onSnapshot(query(collection(firebaseFirestore, "live_chat")),
         {
             next: (snapshot) =>
@@ -85,6 +87,7 @@ const firebaseFirestore = initializeFirestore(firebaseApp, {});
                                         text: assertInstance(
                                             change.doc.get("text"),
                                             "string"),
+                                        isInit: first,
                                     });
 
                                 break;
@@ -120,6 +123,8 @@ const firebaseFirestore = initializeFirestore(firebaseApp, {});
                         }
                     }
                 }
+
+                first = false;
             },
         });
     }

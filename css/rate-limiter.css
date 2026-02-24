@@ -2,8 +2,10 @@
 
 app-rate-limiter
 {
+    box-sizing: border-box;
     width: min(400px, 80vmin);
     aspect-ratio: 1.2;
+    text-align: start;
     position: relative;
 
     & > * { position: absolute }
@@ -30,7 +32,7 @@ app-rate-limiter
 
         &:hover, &:focus-visible
         {
-            background-color: #69c8ff;
+            background-color: #69C8FF;
 
             & > svg
             {
@@ -40,7 +42,7 @@ app-rate-limiter
 
         &:active
         {
-            background-color: #4aa3d6;
+            background-color: #4AA3D6;
         }
     }
 
