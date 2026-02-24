@@ -4,12 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jaydan Lunt | Systems Engineer</title>
-  <link rel="stylesheet" href="/css/rate-limiter.css">
-  <link rel="stylesheet" href="/css/live-chat.css">
-  <script type="module" src="/js/rate-limiter.js"></script>
-  <script type="module" src="/js/live-chat.js"></script>
+  <link rel="stylesheet" href="/portfolio/css/rate-limiter.css">
+  <link rel="stylesheet" href="/portfolio/css/live-chat.css">
+  <script type="module" src="/portfolio/js/rate-limiter.js"></script>
+  <script type="module" src="/portfolio/js/live-chat.js"></script>
 </head>
-<body style="margin: 0;">
+<body
+  style="
+    margin: 0;
+    text-align: center;
+    margin-bottom: 40vh">
   <script type="module">
       for (const e of document.querySelectorAll("#console-intro [data-delay]"))
           setTimeout(() => e.style.display = "inline", Number(e.getAttribute("data-delay")));
@@ -20,7 +24,7 @@
           let endDelay = new Promise((res) => setTimeout(res, 1000));
           try
           {
-              document.body.append(...new DOMParser().parseFromString(await(await fetch("/portfolio")).text(), "text/html").body.childNodes);
+              document.body.append(...new DOMParser().parseFromString(await(await fetch("/portfolio/content")).text(), "text/html").body.childNodes);
               await endDelay;
               document.getElementById("console-draw").style.display = "";
               await new Promise((res) => setTimeout(res, 100));
@@ -33,7 +37,7 @@
               }
               intro.remove();
               document.getElementById("intro-padding").remove();
-              history.replaceState(null, "", "/portfolio");
+              history.replaceState(null, "", "/portfolio/content");
           }
           catch (e)
           {
